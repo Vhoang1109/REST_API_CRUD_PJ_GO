@@ -4,18 +4,19 @@ import (
 	"net/http"
 	"social/todo/list/common"
 	"social/todo/list/modules/item/biz"
-	"social/todo/list/modules/item/model"
 	"social/todo/list/modules/item/storage"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-func CreateItem(db *gorm.DB) func(*gin.Context) {
+func GetItem(db *gorm.DB) func(*gin.Context) {
 	return func(c *gin.Context) {
-		var data model.TodoItemCreation
 
-		if err := c.ShouldBind(&data); err != nil {
+		id, err := strconv.Atoi(c.Param("id"))
+
+		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
 			})
@@ -24,16 +25,17 @@ func CreateItem(db *gorm.DB) func(*gin.Context) {
 		}
 
 		store := storage.NewSQLStore(db)
+		business := biz.NewGetItemBiz(store)
 
-		business := biz.NewCreateItemBiz(store)
+		data, err := business.GetItemById(c.Request.Context(), id)
 
-		if err := business.CreateNewItem(c.Request.Context(), &data); err != nil {
+		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
 			})
 
 			return
 		}
-		c.JSON(http.StatusOK, common.SimpleSuccessResponse(data.Id))
+		c.JSON(http.StatusOK, common.SimpleSuccessResponse(data))
 	}
 }
