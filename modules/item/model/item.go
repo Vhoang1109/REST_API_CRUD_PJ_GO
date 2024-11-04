@@ -5,9 +5,15 @@ import (
 	"social/todo/list/common"
 )
 
+const (
+	EntityName = "Item"
+)
+
 var (
 	ErrTitleIsBlank = errors.New("title cannot be blank")
 	ErrItemDeleted  = errors.New("item is deleted")
+
+	ErrItemDeletedNew = common.NewCustomError(errors.New("item is deleted"), "item has been deleted", "ErrItemDeleted")
 )
 
 type TodoItem struct {
